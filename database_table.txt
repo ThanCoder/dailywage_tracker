@@ -1,0 +1,16 @@
+အဓိက Tables
+
+1. WorkSites Table (လုပ်ငန်းအမည်များ)
+Column	Type	Description
+id	INTEGER	Primary Key
+name	TEXT	Site အမည်
+location	TEXT	Optional (တည်နေရာ)
+
+
+2. WorkLogs Table (နေ့စဉ်အလုပ်မှတ်တမ်း)
+Column	Type	Description
+id	INTEGER	Primary Key
+date	TEXT	နေ့စွဲ (e.g. YYYY-MM-DD)
+workSiteId	INTEGER	Foreign key to WorkSites.id
+hoursWorked	REAL	အလုပ်လုပ်ချိန် (နာရီဖြင့်)
+dailyWage	REAL	တစ်နေ့ လုပ်အားခ (manual/auto calc)

@@ -3,7 +3,7 @@ import 'package:dailywage_tracker/app/models/work_site.dart';
 import 'package:dailywage_tracker/app/screens/work_log_screen.dart';
 import 'package:dailywage_tracker/app/screens/work_site_form_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
+import 'package:hive_flutter/adapters.dart';
 import '../../general_server/index.dart';
 
 import '../../constants.dart';
@@ -35,29 +35,23 @@ class _HomePageState extends State<HomePage> {
           GeneralServerNotiButton(),
         ],
       ),
-      body: StreamBuilder(
-        stream: WorkSite.coll.watchLazy(),
-        builder: (context, snapshot) {
-          return FutureBuilder(
-            future: WorkSite.coll.where().sortByDateDesc().findAll(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return TLoader();
-              final list = snapshot.data ?? [];
-              return ListView.builder(
-                itemCount: list.length,
-                itemBuilder: (context, index) {
-                  final workSite = list[index];
-                  return WorkSiteListItem(
-                    workSite: workSite,
-                    onClicked: (workSite) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              WorkLogScreen(workSite: workSite),
-                        ),
-                      );
-                    },
+      body: ListenableBuilder(
+        listenable: WorkSite.db.listenable(),
+        builder: (context, child) {
+          final list = WorkSite.getLatestDateList();
+
+          return ListView.builder(
+            itemCount: list.length,
+            itemBuilder: (context, index) {
+              final workSite = list[index];
+              return WorkSiteListItem(
+                workSite: workSite,
+                onClicked: (workSite) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => WorkLogScreen(workSite: workSite),
+                    ),
                   );
                 },
               );

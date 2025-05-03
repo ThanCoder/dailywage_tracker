@@ -1,10 +1,9 @@
 import 'package:dailywage_tracker/app/components/index.dart';
 import 'package:dailywage_tracker/app/models/work_site.dart';
-import 'package:dailywage_tracker/app/providers/work_site_provider.dart';
 import 'package:dailywage_tracker/app/widgets/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 class WorkSiteFormScreen extends StatefulWidget {
   WorkSite? workSite;
@@ -36,9 +35,7 @@ class _WorkSiteFormScreenState extends State<WorkSiteFormScreen> {
   }
 
   void _checkName() async {
-    final isExists = await context
-        .read<WorkSiteProvider>()
-        .isExistsName(nameController.text);
+    final isExists = await WorkSite.isExists(siteName: nameController.text);
     nameError = isExists ? 'ရှိနေပါတယ်?။အမည် ပြောင်းလဲပေးပါ' : null;
     setState(() {});
   }
@@ -48,14 +45,17 @@ class _WorkSiteFormScreenState extends State<WorkSiteFormScreen> {
       try {
         final dailyWage = double.parse(dailyWageController.text);
         // new site
-        final site = WorkSite()
-          ..name = nameController.text
-          ..location = locationController.text
-          ..desc = descController.text
-          ..dailyWage = dailyWage
-          ..date = DateTime.now();
+        final site = WorkSite(
+          id: Uuid().v4(),
+          name: nameController.text,
+          dailyWage: dailyWage,
+          location: locationController.text,
+          desc: descController.text,
+          date: DateTime.now(),
+        );
 
-        await context.read<WorkSiteProvider>().add(site);
+        await site.add();
+
         if (!mounted) return;
         Navigator.pop(context);
         return;

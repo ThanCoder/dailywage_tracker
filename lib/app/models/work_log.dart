@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 /*
 2. WorkLogs Table (နေ့စဉ်အလုပ်မှတ်တမ်း)
 Column	Type	Description
@@ -8,28 +9,42 @@ hoursWorked	REAL	အလုပ်လုပ်ချိန် (နာရီဖြ�
 dailyWage	REAL	တစ်နေ့ လုပ်အားခ (manual/auto calc)
 */
 
-import 'package:isar/isar.dart';
-
-import '../services/isar_services.dart';
+import 'package:dailywage_tracker/app/components/extensions/work_log_extension.dart';
+import 'package:hive_flutter/adapters.dart';
 
 part 'work_log.g.dart';
 
-@collection
+@HiveType(typeId: 1)
 class WorkLog {
-  Id id = Isar.autoIncrement;
+  static String dbName = 'work_log';
 
-  late int workSiteId;
-
-  bool morningWorked = false;
-
-  bool eveningWorked = false;
-
-  late double dailyWage;
-
-  late DateTime date;
-
-  bool isPaid = false;
+  @HiveField(0)
+  String id;
+  @HiveField(1)
+  String workSiteId;
+  @HiveField(2)
+  bool morningWorked;
+  @HiveField(3)
+  bool eveningWorked;
+  @HiveField(4)
+  double dailyWage;
+  @HiveField(5)
+  DateTime date;
+  @HiveField(6)
+  bool isPaid;
+  @HiveField(7)
   DateTime? paidDate;
+
+  WorkLog({
+    required this.id,
+    required this.workSiteId,
+    required this.dailyWage,
+    required this.date,
+    this.morningWorked = false,
+    this.eveningWorked = false,
+    this.isPaid = false,
+    this.paidDate,
+  });
 
   double get getTotalWage {
     if (!morningWorked && !eveningWorked) {
@@ -42,22 +57,46 @@ class WorkLog {
   }
 
   Future<int> add() async {
-    return IsarServices.isar.writeTxn<int>(() async {
-      return await coll.put(this);
-    });
+    return await db.add(this);
   }
 
-  Future<int> update() async {
-    return IsarServices.isar.writeTxn<int>(() async {
-      return await coll.put(this);
-    });
+  Future<void> update() async {
+    final index = db.values
+        .toList()
+        .indexWhere((e) => e.id == id && e.workSiteId == workSiteId);
+    if (index == -1) throw Exception('index: `$index` not found!');
+    await db.put(index, this);
   }
 
-  Future<bool> delete() async {
-    return IsarServices.isar.writeTxn<bool>(() async {
-      return await coll.delete(id);
-    });
+  Future<void> delete() async {
+    final index = db.values.toList().indexWhere((e) => e.id == id);
+    if (index == -1) throw Exception('index: `$index` not found!');
+    await db.deleteAt(index);
   }
 
-  static IsarCollection<WorkLog> get coll => IsarServices.isar.workLogs;
+  static List<WorkLog> getLatestDateList() {
+    final list = db.values.toList();
+    list.sortDateDesc();
+    return list;
+  }
+
+  static double allWageSum(List<WorkLog> list) {
+    double res = 0;
+    for (var e in list) {
+      res += e.getTotalWage;
+    }
+    return res;
+  }
+
+  static double allPaidWageSum(List<WorkLog> list, bool isPaid) {
+    double res = 0;
+    for (var e in list) {
+      if (e.isPaid == isPaid) {
+        res += e.getTotalWage;
+      }
+    }
+    return res;
+  }
+
+  static Box<WorkLog> get db => Hive.box<WorkLog>(dbName);
 }

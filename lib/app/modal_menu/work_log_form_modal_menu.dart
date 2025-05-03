@@ -67,12 +67,13 @@ class _WorkLogFormModalMenuState extends State<WorkLogFormModalMenu> {
         cancelText: 'မဖျက်ဘူး',
         submitText: 'ဖျက်မယ်',
         onSubmit: () async {
-          final isDeleted = await workLog.delete();
-          if (!ctx.mounted) return;
-          if (isDeleted) {
+          try {
+            await workLog.delete();
+            if (!ctx.mounted) return;
             showMessage(ctx, 'ဖျက်လိုက်ပါပြီ', isOldStyle: true);
-          } else {
-            showMessage(ctx, 'ဖျက် မရဖြစ်နေပါတယ်', isOldStyle: true);
+          } catch (e) {
+            if (!ctx.mounted) return;
+            showDialogMessage(context, e.toString());
           }
         },
       ),
@@ -186,7 +187,10 @@ class _WorkLogFormModalMenuState extends State<WorkLogFormModalMenu> {
                           Navigator.pop(context);
                           _deleteConfirm();
                         },
-                        child: Text('ဖျက်မယ်'),
+                        child: Text(
+                          'ဖျက်မယ်',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       )
                     : SizedBox(),
                 TextButton(
@@ -196,7 +200,10 @@ class _WorkLogFormModalMenuState extends State<WorkLogFormModalMenu> {
                     Navigator.pop(context);
                     _submit();
                   },
-                  child: Text(widget.isUpdated ? 'ပြင်ဆင်' : 'ထည့်သွင်း'),
+                  child: Text(
+                    widget.isUpdated ? 'ပြင်ဆင်' : 'ထည့်သွင်း',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ],
             ),

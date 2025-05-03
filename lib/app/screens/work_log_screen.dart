@@ -1,11 +1,12 @@
-import 'package:dailywage_tracker/app/components/work_log_list_item.dart';
-import 'package:dailywage_tracker/app/extensions/datetime_extenstion.dart';
+import 'package:dailywage_tracker/app/components/extensions/work_log_extension.dart';
+import 'package:dailywage_tracker/app/components/work_log/work_log_components.dart';
 import 'package:dailywage_tracker/app/modal_menu/work_log_form_modal_menu.dart';
 import 'package:dailywage_tracker/app/models/work_log.dart';
 import 'package:dailywage_tracker/app/models/work_site.dart';
 import 'package:dailywage_tracker/app/widgets/core/index.dart';
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:uuid/uuid.dart';
 
 class WorkLogScreen extends StatefulWidget {
   WorkSite workSite;
@@ -20,10 +21,12 @@ class WorkLogScreen extends StatefulWidget {
 
 class _WorkLogScreenState extends State<WorkLogScreen> {
   void _add() async {
-    final workLog = WorkLog()
-      ..workSiteId = widget.workSite.id
-      ..dailyWage = widget.workSite.dailyWage
-      ..date = DateTime.now();
+    final workLog = WorkLog(
+      id: Uuid().v4(),
+      workSiteId: widget.workSite.id,
+      dailyWage: widget.workSite.dailyWage,
+      date: DateTime.now(),
+    );
 
     showModalBottomSheet(
       context: context,
@@ -41,59 +44,31 @@ class _WorkLogScreenState extends State<WorkLogScreen> {
     );
   }
 
-  Widget _listWidget(List<WorkLog> list) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: CustomScrollView(
-        slivers: [
-          // this month
-          SliverToBoxAdapter(
-            child: Column(
-              // crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 5,
-              children: [
-                Text('ယခုလ'),
-                Text(
-                    'ရက်စွဲ: ${DateTime.now().toParseTime(pattern: 'dd/MM/yyyy')}'),
-              ],
-            ),
-          ),
-          // all list
-          SliverList.builder(
-            itemCount: list.length,
-            itemBuilder: (context, index) => WorkLogListItem(
-              workLog: list[index],
-              onClicked: _showEditForm,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return MyScaffold(
       contentPadding: 0,
       appBar: AppBar(
-        title: Text('`${widget.workSite.name}` အလုပ် မှတ်တမ်း'),
+        title: Text('`${widget.workSite.name}` အလုပ်ဆင်း မှတ်တမ်း'),
       ),
-      body: StreamBuilder(
-          stream: WorkLog.coll.watchLazy(),
-          builder: (context, snapshot) {
-            return FutureBuilder(
-              future: WorkLog.coll
-                  .filter()
-                  .workSiteIdEqualTo(widget.workSite.id)
-                  .sortByDateDesc()
-                  .findAll(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return TLoader();
-                final list = snapshot.data ?? [];
-                return _listWidget(list);
-              },
-            );
-          }),
+      body: ListenableBuilder(
+        listenable: WorkLog.db.listenable(),
+        builder: (context, child) {
+          final list = WorkLog.db.values
+              .where((e) => e.workSiteId == widget.workSite.id)
+              .toList();
+          list.sortDateDesc();
+          final currentMonthList =
+              list.where((e) => e.date.month == DateTime.now().month).toList();
+          return CustomScrollView(
+            slivers: [
+              WorkLogComponents.getAllMonthsCalculation(currentMonthList),
+              ...WorkLogComponents.getGroupedMonthList(list,
+                  onClicked: _showEditForm),
+            ],
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _add,
         child: Icon(Icons.add),

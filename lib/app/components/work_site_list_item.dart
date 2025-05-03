@@ -23,6 +23,9 @@ class WorkSiteListItem extends StatelessWidget {
         children: [
           Text('အလုပ် အမည်: ${workSite.name}'),
           Text('တစ်နေ့ လုပ်အားခ: ${workSite.dailyWage} ks'),
+          workSite.location.isEmpty
+              ? SizedBox.shrink()
+              : Text('တည်နေရာ: ${workSite.location}'),
           Text('ရက်စွဲ: ${workSite.date.toParseTime()}'),
         ],
       ),

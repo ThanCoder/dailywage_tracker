@@ -18,7 +18,7 @@ class WorkLogListItem extends StatelessWidget {
       child: Card(
         color: workLog.isPaid
             ? const Color.fromARGB(185, 8, 97, 11)
-            : const Color.fromARGB(106, 175, 133, 6),
+            : const Color.fromARGB(106, 223, 173, 25),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(

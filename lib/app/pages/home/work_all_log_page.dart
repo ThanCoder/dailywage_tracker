@@ -29,7 +29,7 @@ class _WorkAllLogPageState extends State<WorkAllLogPage> {
     return MyScaffold(
         contentPadding: 0,
         appBar: AppBar(
-          title: Text('အလုပ် မှတ်တမ်း စာရင်းအားလုံး'),
+          title: Text('အလုပ် မှတ်တမ်းအားလုံး'),
         ),
         body: ListenableBuilder(
           listenable: WorkLog.db.listenable(),

@@ -9,7 +9,7 @@ hoursWorked	REAL	အလုပ်လုပ်ချိန် (နာရီဖြ�
 dailyWage	REAL	တစ်နေ့ လုပ်အားခ (manual/auto calc)
 */
 
-import 'package:dailywage_tracker/app/components/extensions/work_log_extension.dart';
+import 'package:dailywage_tracker/app/extensions/work_log_extension.dart';
 import 'package:hive_flutter/adapters.dart';
 
 part 'work_log.g.dart';
@@ -17,6 +17,8 @@ part 'work_log.g.dart';
 @HiveType(typeId: 1)
 class WorkLog {
   static String dbName = 'work_log';
+
+  static Box<WorkLog> get db => Hive.box<WorkLog>(dbName);
 
   @HiveField(0)
   String id;
@@ -61,9 +63,7 @@ class WorkLog {
   }
 
   Future<void> update() async {
-    final index = db.values
-        .toList()
-        .indexWhere((e) => e.id == id && e.workSiteId == workSiteId);
+    final index = db.values.toList().indexWhere((e) => e.id == id);
     if (index == -1) throw Exception('index: `$index` not found!');
     await db.put(index, this);
   }
@@ -77,6 +77,17 @@ class WorkLog {
   static List<WorkLog> getLatestDateList() {
     final list = db.values.toList();
     list.sortDateDesc();
+    return list;
+  }
+
+  static List<WorkLog> getCurrentMonthList(String siteId) {
+    final currentDate = DateTime.now();
+    var list = db.values
+        .where((e) =>
+            e.date.year == currentDate.year &&
+            e.date.month == currentDate.month &&
+            e.workSiteId == siteId)
+        .toList();
     return list;
   }
 
@@ -97,6 +108,4 @@ class WorkLog {
     }
     return res;
   }
-
-  static Box<WorkLog> get db => Hive.box<WorkLog>(dbName);
 }

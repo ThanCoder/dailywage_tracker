@@ -39,8 +39,8 @@ class _WorkAllLogPageState extends State<WorkAllLogPage> {
               padding: const EdgeInsets.all(8.0),
               child: CustomScrollView(
                 slivers: [
-                  WorkLogComponents.getAllMonthsCalculation(list),
-                  ...WorkLogComponents.getGroupedMonthList(
+                  // WorkLogComponents.getAllMonthsCalculation(list),
+                  ...WorkLogComponents.getGroupedYearMonthList(
                     list,
                     onClicked: _showEditForm,
                   ),

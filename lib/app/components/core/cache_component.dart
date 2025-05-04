@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../extensions/double_extension.dart';
+import '../../extensions/core/double_extension.dart';
 
 import '../../dialogs/core/index.dart';
 import '../../services/core/index.dart';

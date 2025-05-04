@@ -1,4 +1,4 @@
-import 'package:dailywage_tracker/app/extensions/datetime_extension.dart';
+import 'package:dailywage_tracker/app/extensions/core/datetime_extension.dart';
 import 'package:dailywage_tracker/app/models/work_log.dart';
 import 'package:flutter/material.dart';
 

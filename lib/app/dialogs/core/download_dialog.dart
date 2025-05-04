@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import '../../extensions/double_extension.dart';
+import '../../extensions/core/double_extension.dart';
 
 class DownloadDialog extends StatefulWidget {
   String title;

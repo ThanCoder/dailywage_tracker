@@ -7,6 +7,7 @@ name	TEXT	Site အမည်
 location	TEXT	Optional (တည်နေရာ)
 */
 
+import 'package:dailywage_tracker/app/extensions/work_site_extension.dart';
 import 'package:hive_flutter/adapters.dart';
 
 part 'work_site.g.dart';
@@ -60,15 +61,7 @@ class WorkSite {
 
   static List<WorkSite> getLatestDateList() {
     final list = db.values.toList();
-    list.sort((a, b) {
-      if (a.date.millisecondsSinceEpoch > b.date.millisecondsSinceEpoch) {
-        return -1;
-      }
-      if (a.date.millisecondsSinceEpoch < b.date.millisecondsSinceEpoch) {
-        return 1;
-      }
-      return 0;
-    });
+    list.sortDateDesc();
     return list;
   }
 

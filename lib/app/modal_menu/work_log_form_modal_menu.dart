@@ -83,7 +83,7 @@ class _WorkLogFormModalMenuState extends State<WorkLogFormModalMenu> {
   void _pickDate() async {
     final date = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: workLog.date,
       currentDate: workLog.date,
       firstDate: DateTime(2024),
       lastDate: DateTime.now(),

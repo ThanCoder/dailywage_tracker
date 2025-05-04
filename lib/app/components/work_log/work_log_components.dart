@@ -7,7 +7,7 @@ class WorkLogComponents {
   // အားလုံးပေါင်း
   static Widget getAllMonthsCalculation(
     List<WorkLog> list, {
-    String title = 'အားလုံးပေါင်း',
+    String title = 'စုစုပေါင်း',
   }) {
     return SliverToBoxAdapter(
       child: Card(
@@ -26,7 +26,7 @@ class WorkLogComponents {
                   'ရရှိပြီး ငွေပမာဏ: ${WorkLog.allPaidWageSum(list, true)} ks'),
               Text(
                   'ရရှိမယ့် ကျန်ငွေပမာဏ: ${WorkLog.allPaidWageSum(list, false)} ks'),
-              Text('အလုပ်လုပ်ခဲ့တဲ့ ရက်စုစုပေါင်း: ${list.length} ရက်'),
+              Text('အလုပ်ဆင်းခဲ့တဲ့ ရက်စုစုပေါင်း: ${list.length} ရက်'),
               // const Divider(),
             ],
           ),
@@ -35,20 +35,21 @@ class WorkLogComponents {
     );
   }
 
-  // လ တစ်ခုချင်းစီ
+  // month အလိုက်
   static List<Widget> getGroupedMonthList(
     List<WorkLog> list, {
     void Function(WorkLog)? onClicked,
   }) {
-    Map<String, List<WorkLog>> groupedByMonthList = {};
+    Map<int, List<WorkLog>> groupedByMonthList = {};
+    final currentDate = DateTime.now();
 
     for (var log in list) {
-      var key =
-          'Month: ${log.date.year}-${log.date.month.toString().padLeft(2, '0')}';
-      if (log.date.month == DateTime.now().month) {
-        key = 'ယခုလ';
-      }
-      groupedByMonthList.putIfAbsent(key, () => []).add(log);
+      // ဒီနှစ် လ
+
+      if (currentDate.year != log.date.year) continue;
+      // var key = 'Month: ${log.date.year}-${log.date.month.toString().padLeft(2, '0')}';
+
+      groupedByMonthList.putIfAbsent(log.date.month, () => []).add(log);
     }
 
     List<Widget> slivers = [];
@@ -60,7 +61,9 @@ class WorkLogComponents {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                month, // eg. 2025-05
+                month == currentDate.month
+                    ? 'ယခုလ'
+                    : 'Month: ${month.toString().padLeft(2, '0')}', // eg. 2025-05
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
@@ -84,6 +87,82 @@ class WorkLogComponents {
         );
         //အားလုံးပေါင်း
         slivers.add(getAllMonthsCalculation(list));
+      },
+    );
+    return slivers;
+  }
+
+  // year အလိုက်
+  static List<Widget> getGroupedYearMonthList(
+    List<WorkLog> list, {
+    void Function(WorkLog)? onClicked,
+  }) {
+    Map<int, Map<int, List<WorkLog>>> groupedByYearMonthList = {};
+    final currentDate = DateTime.now();
+
+    for (var log in list) {
+      var year = log.date.year;
+      var month = log.date.month;
+
+      groupedByYearMonthList.putIfAbsent(year, () => {});
+      groupedByYearMonthList[year]!.putIfAbsent(month, () => []);
+      //add
+      groupedByYearMonthList[year]![month]!.add(log);
+    }
+
+    List<Widget> slivers = [];
+    groupedByYearMonthList.forEach(
+      (year, map) {
+        //year
+        slivers.add(
+          SliverToBoxAdapter(
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  year == currentDate.year ? 'ယခု နှစ်' : 'Year: $year',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        map.forEach((month, monthList) {
+          // month
+          slivers.add(
+            SliverToBoxAdapter(
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    year == currentDate.year && month == currentDate.month
+                        ? 'ဒီလ'
+                        : 'Month: ${month.toString().padLeft(2, '0')}',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+          );
+          slivers.add(
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => WorkLogListItem(
+                  workLog: monthList[index],
+                  onClicked: (workLog) {
+                    if (onClicked != null) {
+                      onClicked(workLog);
+                    }
+                  },
+                ),
+                childCount: monthList.length,
+              ),
+            ),
+          );
+          //အားလုံးပေါင်း
+          slivers.add(getAllMonthsCalculation(monthList));
+        });
       },
     );
     return slivers;

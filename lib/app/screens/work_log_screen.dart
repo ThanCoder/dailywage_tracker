@@ -1,4 +1,4 @@
-import 'package:dailywage_tracker/app/components/extensions/work_log_extension.dart';
+import 'package:dailywage_tracker/app/extensions/work_log_extension.dart';
 import 'package:dailywage_tracker/app/components/work_log/work_log_components.dart';
 import 'package:dailywage_tracker/app/modal_menu/work_log_form_modal_menu.dart';
 import 'package:dailywage_tracker/app/models/work_log.dart';
@@ -58,11 +58,10 @@ class _WorkLogScreenState extends State<WorkLogScreen> {
               .where((e) => e.workSiteId == widget.workSite.id)
               .toList();
           list.sortDateDesc();
-          final currentMonthList =
-              list.where((e) => e.date.month == DateTime.now().month).toList();
           return CustomScrollView(
             slivers: [
-              WorkLogComponents.getAllMonthsCalculation(currentMonthList),
+              WorkLogComponents.getAllMonthsCalculation(
+                  WorkLog.getCurrentMonthList(widget.workSite.id)),
               ...WorkLogComponents.getGroupedMonthList(list,
                   onClicked: _showEditForm),
             ],
